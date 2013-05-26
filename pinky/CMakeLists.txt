@@ -22,7 +22,11 @@ set(ros_lib_RECURSE True)
 generate_arduino_library(example_lib
     SRCS example/example.cpp
     HDRS example/example.h)
+
+generate_arduino_library(motor_lib
+    SRCS motor_emulator.cpp
+    HDRS motor.h motor_emulator.h)
     
 generate_arduino_firmware(pinky
     SRCS pinky_main.cpp
-    LIBS example_lib)
+    LIBS example_lib motor_lib)
