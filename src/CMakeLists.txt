@@ -16,5 +16,10 @@ project(Pinky C CXX)
 set(ARDUINO_DEFAULT_BOARD mega2560)
 set(ARDUINO_DEFAULT_PORT /dev/ttyUSB0)
 
+generate_arduino_library(example_lib
+    SRCS example/example.cpp
+    HDRS example/example.h)
+    
 generate_arduino_firmware(pinky
-    SRCS pinky_main.cpp)
+    SRCS pinky_main.cpp
+    LIBS example_lib)
