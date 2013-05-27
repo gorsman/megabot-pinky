@@ -78,6 +78,7 @@ void loop() {
     long t = curTime - startTime;
     // log(motor.getTicks(), t * 2, motorController.motorPower);
     log(t * 2, motor.getTicks(), motorController.lastTicksDelta, motorController.lastInstantSpeed, motorController.motorPower);
+    // log(motorController.getSpeed(), motor.getTicks(), motorController.lastTicksDelta, motorController.lastInstantSpeed, motorController.motorPower);
     // logMsg(motor.getTicks());
   }
 
