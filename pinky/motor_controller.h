@@ -6,8 +6,8 @@
 #include "motor.h"
 
 #define MOTOR_CONTROLLER_UPDATE_PERIOD 50
-// Average the speed over the last 50 updates (500ms).
-#define MOTOR_CONTROLLER_NUM_UPDATES_TO_AVERAGE_SPEED 10
+// Average the speed over the last 20 updates (1000ms).
+#define MOTOR_CONTROLLER_NUM_UPDATES_TO_AVERAGE_SPEED 20
 
 class MotorController {
 public:

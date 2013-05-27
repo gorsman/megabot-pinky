@@ -56,6 +56,7 @@ void setup() {
   startTime = lastTrigger + 5000;
 }
 
+#define SPEED 5000
 
 void loop() {
   nh.spinOnce();
@@ -76,13 +77,13 @@ void loop() {
     */
 
     long t = curTime - startTime;
-    // log(t * 5, motor.getTicks(), motorController.lastTicksDelta, motorController.lastInstantSpeed, motorController.motorPower);
-    log(t * 5, motor.getTicks(), motorController.getSpeed(), motorController.lastInstantSpeed, motorController.motorPower);
+    // log(t * SPEED / 1000, motor.getTicks(), motorController.lastTicksDelta, motorController.lastInstantSpeed, motorController.motorPower);
+    log(t * SPEED / 1000, motor.getTicks(), motorController.getSpeed(), motorController.lastInstantSpeed, motorController.motorPower);
     // logMsg(motor.getTicks());
   }
 
   if (motorController.targetSpeed == 0 && curTime >= startTime) {
-    motorController.setTargetSpeed(5000);
+    motorController.setTargetSpeed(SPEED);
   }
 }
 

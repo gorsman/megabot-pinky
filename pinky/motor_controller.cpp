@@ -7,11 +7,13 @@
 #define TICKS_DELTA_ACCELERATION_THRESHOLD 5
 
 // Time in millis we allow the motor to catch up with the target distance.
-// This affects the
-#define CATCHUP_TIME 1000
+// This affects the real speed we want to be shooting for.
+#define CATCHUP_TIME 500
 
 
 namespace {
+
+const int32_t MAX_POWER_STEP = MOTOR_MAX_POWER >> 1;
 
 #define SPEED_PER_TICK 1000 / MOTOR_CONTROLLER_UPDATE_PERIOD
 const int32_t ACCELERATION_SPEED_DELTA_THRESHOLD = 5 * SPEED_PER_TICK;
@@ -92,6 +94,23 @@ void MotorController::updateSpeed(long curTime, int32_t curTicks) {
   ticksLog.index = i;
 }
 
+namespace {
+
+inline int16_t computePowerDelta(int16_t curPower, int32_t curSpeed, int32_t targetSpeed) {
+  if (curSpeed == 0) {
+    return targetSpeed > 0 ? 1 : -1;
+  }
+  int32_t motorPowerDelta = curPower * targetSpeed / curSpeed - curPower;
+  if (motorPowerDelta > MAX_POWER_STEP) {
+    motorPowerDelta = MAX_POWER_STEP;
+  } else if (motorPowerDelta < -MAX_POWER_STEP) {
+    motorPowerDelta = -MAX_POWER_STEP;
+  }
+  return motorPowerDelta;
+}
+
+}  // namespace
+
 void MotorController::updateInternal(long curTime, int32_t curTicks) {
   long timeDelta = curTime - lastUpdate;
   int32_t ticksDelta = curTicks - lastTicks;
@@ -112,56 +131,47 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
 
   if (lastUpdate <= lastCheckpoint) {
     if (targetSpeed > 0) {
-      if (motorPower <= 0) {
-        powerStep = MOTOR_MAX_POWER >> 1;
-        motorPower = powerStep;
+      if (motorPower <= 0 || instantSpeed <= 0) {
+        powerStep = MAX_POWER_STEP;
       } else {
-        // TODO: implemenet here
+        powerStep = computePowerDelta(motorPower, instantSpeed, targetSpeed);
       }
     } else {
-      if (motorPower >= 0) {
-        powerStep = -(MOTOR_MAX_POWER >> 1);
-        motorPower = powerStep;
+      if (motorPower >= 0 || instantSpeed >= 0) {
+        powerStep = -MAX_POWER_STEP;
       } else {
-        // TODO: implement here
+        powerStep = computePowerDelta(motorPower, instantSpeed, targetSpeed);
       }
     }
+    motorPower = powerStep;
   } else {
     int32_t targetTicks = checkpointTicks + targetSpeed * (curTime - lastCheckpoint) / 1000;
     int32_t controlTicksDelta = targetTicks - curTicks;
     int32_t realTargetSpeed = targetSpeed + controlTicksDelta * 1000 / CATCHUP_TIME;
 
-    if (powerStep > 0) {
+    if (!accelerating(lastInstantSpeed, instantSpeed)) {
+      powerStep = computePowerDelta(motorPower, instantSpeed, realTargetSpeed);
+      motorPower += powerStep;
+    } else if (powerStep > 0) {
       // We're currently accelerating forwards.
-
       if (instantSpeed > realTargetSpeed) {
-        // We overshoot - using binary-search-like approach to adjust the power.
+        // We overshoot and still accelerating - using binary-search-like approach to adjust the power.
         powerStep = - (powerStep >> 1);
         if (powerStep == 0) {
           powerStep = -1;
         }
         motorPower += powerStep;
-      } else {
-        if (!accelerating(lastInstantSpeed, instantSpeed)) {
-          motorPower += powerStep;
-        }
       }
     } else {
       // We're currently accelerating backwards.
-
       if (instantSpeed < realTargetSpeed) {
-        // We overshoot - using binary-search-like approach to adjust the power.
+        // We overshoot and still accelerating - using binary-search-like approach to adjust the power.
         powerStep = (-powerStep) >> 1;
         if (powerStep == 0) {
           powerStep = 1;
         }
         motorPower += powerStep;
-      } else {
-        if (!accelerating(lastInstantSpeed, instantSpeed)) {
-          motorPower += powerStep;
-        }
       }
-
     }
 
   }
