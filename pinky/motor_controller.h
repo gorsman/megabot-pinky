@@ -43,7 +43,6 @@ public:
   long lastUpdate;
   int32_t lastTicks;
   int32_t lastInstantSpeed;
-  int32_t lastTicksDelta;
 
   // Log of tick measurements used in order to average speed.
   struct TicksLog {

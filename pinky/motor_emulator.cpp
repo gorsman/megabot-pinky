@@ -9,7 +9,7 @@
 
 // TODOs:
 //   + stale power (minimum power required to move the motor)
-//   - acceleration
+//   + acceleration
 //   - weight (affects max-speed and actual stale power)
 //   - ticks measurement spread
 
@@ -20,10 +20,12 @@
 
 #define TICKS_CACHE_TIME_MILLIS 3
 
+namespace {
 static const int32_t MAX_SPEED =
     MAX_SPEED_ROUNDS_PER_MINUTE * MOTOR_TICKS_PER_ROUND / 60;  // ticks/sec ~ 6000
 static const int32_t ACCELRATION =
     MAX_SPEED * 1000 / MAX_SPEED_ACCELERATION_TIME_MILLIS;  // ticks/sec^2 ~ 15000
+}  // namespace
 
 MotorEmulator MotorEmulator::LEFT;
 MotorEmulator MotorEmulator::RIGHT;

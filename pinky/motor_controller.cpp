@@ -5,7 +5,23 @@
 // #define POWER_INCREMENT 10
 // #define TICKS_DELTA_THRESHOLD 2
 #define TICKS_DELTA_ACCELERATION_THRESHOLD 5
+
+// Time in millis we allow the motor to catch up with the target distance.
+// This affects the
 #define CATCHUP_TIME 1000
+
+
+namespace {
+
+#define SPEED_PER_TICK 1000 / MOTOR_CONTROLLER_UPDATE_PERIOD
+const int32_t ACCELERATION_SPEED_DELTA_THRESHOLD = 5 * SPEED_PER_TICK;
+
+inline bool accelerating(int32_t lastSpeed, int32_t currentSpeed) {
+  return abs(lastSpeed - currentSpeed) > ACCELERATION_SPEED_DELTA_THRESHOLD;
+}
+
+}  // namespace
+
 
 MotorController::MotorController(Motor& motor)
   : motor(motor),
@@ -17,8 +33,7 @@ MotorController::MotorController(Motor& motor)
     powerStep(0),
     lastUpdate(0),
     lastTicks(0),
-    lastInstantSpeed(0),
-    lastTicksDelta(0) {
+    lastInstantSpeed(0) {
   ticksLog.index = 0;
   long curTime = millis();
   for (int i = 0; i < MOTOR_CONTROLLER_NUM_UPDATES_TO_AVERAGE_SPEED; ++i) {
@@ -77,10 +92,10 @@ void MotorController::updateSpeed(long curTime, int32_t curTicks) {
   ticksLog.index = i;
 }
 
-
 void MotorController::updateInternal(long curTime, int32_t curTicks) {
   long timeDelta = curTime - lastUpdate;
   int32_t ticksDelta = curTicks - lastTicks;
+
   int32_t instantSpeed = ticksDelta * 1000 / timeDelta;
 
   if (targetSpeed == 0) {
@@ -91,8 +106,7 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
 
     lastUpdate = curTime;
     lastTicks = curTicks;
-    lastInstantSpeed = instantSpeed;
-    lastTicksDelta = ticksDelta;
+    lastInstantSpeed = timeDelta >= MOTOR_CONTROLLER_UPDATE_PERIOD ? instantSpeed : 0;
     return;
   }
 
@@ -121,16 +135,14 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
       // We're currently accelerating forwards.
 
       if (instantSpeed > realTargetSpeed) {
-        // We overshoot.
-
+        // We overshoot - using binary-search-like approach to adjust the power.
         powerStep = - (powerStep >> 1);
         if (powerStep == 0) {
           powerStep = -1;
         }
         motorPower += powerStep;
       } else {
-        bool accelerating = abs(ticksDelta - lastTicksDelta) > TICKS_DELTA_ACCELERATION_THRESHOLD;
-        if (!accelerating) {
+        if (!accelerating(lastInstantSpeed, instantSpeed)) {
           motorPower += powerStep;
         }
       }
@@ -138,16 +150,14 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
       // We're currently accelerating backwards.
 
       if (instantSpeed < realTargetSpeed) {
-        // We overshoot.
-
+        // We overshoot - using binary-search-like approach to adjust the power.
         powerStep = (-powerStep) >> 1;
         if (powerStep == 0) {
           powerStep = 1;
         }
         motorPower += powerStep;
       } else {
-        bool accelerating = abs(ticksDelta - lastTicksDelta) > TICKS_DELTA_ACCELERATION_THRESHOLD;
-        if (!accelerating) {
+        if (!accelerating(lastInstantSpeed, instantSpeed)) {
           motorPower += powerStep;
         }
       }
@@ -160,7 +170,6 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
   lastUpdate = curTime;
   lastTicks = curTicks;
   lastInstantSpeed = instantSpeed;
-  lastTicksDelta = ticksDelta;
 }
 
 void MotorController::updateMotorPower() {
