@@ -76,14 +76,13 @@ void loop() {
     */
 
     long t = curTime - startTime;
-    // log(motor.getTicks(), t * 2, motorController.motorPower);
-    log(t * 2, motor.getTicks(), motorController.lastTicksDelta, motorController.lastInstantSpeed, motorController.motorPower);
-    // log(motorController.getSpeed(), motor.getTicks(), motorController.lastTicksDelta, motorController.lastInstantSpeed, motorController.motorPower);
+    // log(t * 5, motor.getTicks(), motorController.lastTicksDelta, motorController.lastInstantSpeed, motorController.motorPower);
+    log(motorController.getSpeed(), motor.getTicks(), motorController.lastTicksDelta, motorController.lastInstantSpeed, motorController.motorPower);
     // logMsg(motor.getTicks());
   }
 
   if (motorController.targetSpeed == 0 && curTime >= startTime) {
-    motorController.setTargetSpeed(2000);
+    motorController.setTargetSpeed(5000);
   }
 }
 

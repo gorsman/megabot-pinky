@@ -5,7 +5,7 @@
 // #define POWER_INCREMENT 10
 // #define TICKS_DELTA_THRESHOLD 2
 #define TICKS_DELTA_ACCELERATION_THRESHOLD 5
-#define CATCHUP_TIME 2000
+#define CATCHUP_TIME 1000
 
 MotorController::MotorController(Motor& motor)
   : motor(motor),
@@ -123,7 +123,7 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
       if (instantSpeed > realTargetSpeed) {
         // We overshoot.
 
-        powerStep = - ((powerStep * 3) >> 2);
+        powerStep = - (powerStep >> 1);
         if (powerStep == 0) {
           powerStep = -1;
         }
@@ -140,7 +140,7 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
       if (instantSpeed < realTargetSpeed) {
         // We overshoot.
 
-        powerStep = (-powerStep * 3) >> 2;
+        powerStep = (-powerStep) >> 1;
         if (powerStep == 0) {
           powerStep = 1;
         }
