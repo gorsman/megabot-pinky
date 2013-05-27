@@ -5,6 +5,7 @@
 // #define POWER_INCREMENT 10
 // #define TICKS_DELTA_THRESHOLD 2
 #define TICKS_DELTA_ACCELERATION_THRESHOLD 5
+#define CATCHUP_TIME 2000
 
 MotorController::MotorController(Motor& motor)
   : motor(motor),
@@ -114,12 +115,12 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
   } else {
     int32_t targetTicks = checkpointTicks + targetSpeed * (curTime - lastCheckpoint) / 1000;
     int32_t controlTicksDelta = targetTicks - curTicks;
+    int32_t realTargetSpeed = targetSpeed + controlTicksDelta * 1000 / CATCHUP_TIME;
 
     if (powerStep > 0) {
       // We're currently accelerating forwards.
 
-      //if (controlTicksDelta < 0) {
-      if (instantSpeed > targetSpeed) {
+      if (instantSpeed > realTargetSpeed) {
         // We overshoot.
 
         powerStep = - ((powerStep * 3) >> 2);
@@ -127,7 +128,6 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
           powerStep = -1;
         }
         motorPower += powerStep;
-      // } else if (controlTicksDelta > 0) {
       } else {
         bool accelerating = abs(ticksDelta - lastTicksDelta) > TICKS_DELTA_ACCELERATION_THRESHOLD;
         if (!accelerating) {
@@ -137,8 +137,7 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
     } else {
       // We're currently accelerating backwards.
 
-      // if (controlTicksDelta > 0) {
-      if (instantSpeed < targetSpeed) {
+      if (instantSpeed < realTargetSpeed) {
         // We overshoot.
 
         powerStep = (-powerStep * 3) >> 2;
@@ -146,7 +145,6 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
           powerStep = 1;
         }
         motorPower += powerStep;
-      // } else if (controlTicksDelta < 0) {
       } else {
         bool accelerating = abs(ticksDelta - lastTicksDelta) > TICKS_DELTA_ACCELERATION_THRESHOLD;
         if (!accelerating) {
