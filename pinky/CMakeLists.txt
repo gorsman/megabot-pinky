@@ -24,8 +24,8 @@ generate_arduino_library(example_lib
     HDRS example/example.h)
 
 generate_arduino_library(motor_lib
-    SRCS motor_emulator.cpp
-    HDRS motor.h motor_emulator.h)
+    SRCS motor_emulator.cpp motor_controller.cpp
+    HDRS motor.h motor_emulator.h motor_controller.h)
     
 generate_arduino_firmware(pinky
     SRCS pinky_main.cpp

@@ -1,5 +1,8 @@
 #include "motor.h"
 
+// TODO: remove this define (as it's defined in motor_emulator.h)
+#define MOTOR_EMULATOR_ENABLED
+
 #ifdef MOTOR_EMULATOR_ENABLED
 
 #include "Arduino.h"
@@ -9,8 +12,6 @@
 //   - acceleration
 //   - weight (affects max-speed and actual stale power)
 //   - ticks measurement spread
-
-#define MAX_POWER 127
 
 // Motor parameters.
 #define STALE_POWER 20
@@ -63,6 +64,10 @@ int32_t MotorEmulator::getTicks() {
 }
 
 void MotorEmulator::setPower(int8_t power) {
+  if (power == this->power) {
+    // No need to do anything - power is already set.
+    return;
+  }
   long curTime = millis();
   lastTicks = getTicksInternal(curTime);
   lastSpeed = getCurrentSpeed(curTime);
@@ -81,11 +86,15 @@ void MotorEmulator::setPower(int8_t power) {
   }
 }
 
+int8_t MotorEmulator::getPower() {
+  return power;
+}
+
 int32_t MotorEmulator::speedFromPower(int8_t power) {
   if (abs(power) < STALE_POWER) {
     return 0;
   }
-  return power * MAX_SPEED / MAX_POWER;
+  return power * MAX_SPEED / MOTOR_MAX_POWER;
 }
 
 int32_t MotorEmulator::getCurrentSpeed(long curTime) {

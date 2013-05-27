@@ -3,8 +3,6 @@
 
 #include <inttypes.h>
 
-#define MOTOR_TICKS_PER_ROUND int32_t(3000)
-
 #define MOTOR_EMULATOR_ENABLED
 
 class MotorEmulator {
@@ -12,7 +10,9 @@ public:
 	MotorEmulator();
 
 	int32_t getTicks();
+
 	void setPower(int8_t power);
+	int8_t getPower();
 
 	static MotorEmulator LEFT;
 	static MotorEmulator RIGHT;
@@ -39,4 +39,4 @@ private:
 	int32_t getTicksInternal(long curTime);
 };
 
-#endif /* MOTOR_H_ */
+#endif  // MOTOR_H_
