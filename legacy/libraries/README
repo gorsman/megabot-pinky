@@ -1,0 +1,6 @@
+This directory contains Arduino libraries that are necessary to compile
+Pinky.pde sketch.
+
+Below are the links to some other third-party libraries that you'll also need.
+ - USB host library (as in http://developer.android.com/guide/topics/usb/adk.html)
+
