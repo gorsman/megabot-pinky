@@ -34,6 +34,7 @@ public:
 // private:
   int32_t targetSpeed;
   int16_t motorPower;
+  long updateDelay;
 
   // Actual speed measured based on tick-data from the motor.
   int32_t speed;

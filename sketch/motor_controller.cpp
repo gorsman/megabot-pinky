@@ -8,7 +8,7 @@
 
 // Time in millis we allow the motor to catch up with the target distance.
 // This affects the real speed we want to be shooting for.
-#define CATCHUP_TIME 5000
+#define CATCHUP_TIME 1000
 
 
 namespace {
@@ -18,8 +18,8 @@ const int32_t MAX_POWER_STEP = MOTOR_MAX_POWER >> 1;
 #define SPEED_PER_TICK 1000 / MOTOR_CONTROLLER_UPDATE_PERIOD
 const int32_t ACCELERATION_SPEED_DELTA_THRESHOLD = 5 * SPEED_PER_TICK;
 
-inline bool accelerating(int32_t lastSpeed, int32_t currentSpeed) {
-  return abs(lastSpeed - currentSpeed) > ACCELERATION_SPEED_DELTA_THRESHOLD;
+inline bool isStableSpeed(int32_t lastSpeed, int32_t currentSpeed) {
+  return abs(lastSpeed - currentSpeed) <= ACCELERATION_SPEED_DELTA_THRESHOLD;
 }
 
 }  // namespace
@@ -29,6 +29,7 @@ MotorController::MotorController(Motor& motor)
   : motor(motor),
     targetSpeed(0),
     motorPower(0),
+    updateDelay(MOTOR_CONTROLLER_UPDATE_PERIOD),
     speed(0),
     lastCheckpoint(0),
     checkpointTicks(0),
@@ -63,11 +64,14 @@ bool MotorController::isMaxed() {
 
 bool MotorController::update() {
   long curTime = millis();
-  if (curTime - lastUpdate < MOTOR_CONTROLLER_UPDATE_PERIOD) {
+  long timeDelta = curTime - lastUpdate;
+  if (timeDelta < updateDelay) {
     // Too early to do an update.
     return false;
   }
   int32_t curTicks = motor.getTicks();
+  
+  // TODO(kulkin): updateSpeed should be triggered at even intervals unlike updateInternal.
   updateSpeed(curTime, curTicks);
   updateInternal(curTime, curTicks);
   return true;
@@ -151,6 +155,7 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
     int32_t controlTicksDelta = targetTicks - curTicks;
     int32_t realTargetSpeed = targetSpeed + controlTicksDelta * 1000 / CATCHUP_TIME;
     
+    /*
     Serial.print("MC: ");
     Serial.print(realTargetSpeed);
     Serial.print(" ");
@@ -158,10 +163,14 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
     Serial.print("   power: ");
     Serial.print(motorPower);
     Serial.print(" -> ");
+    */
 
-    if (!accelerating(lastInstantSpeed, instantSpeed) || abs(powerStep) <= 1) {
+    updateDelay = MOTOR_CONTROLLER_UPDATE_PERIOD;
+    if (isStableSpeed(lastInstantSpeed, instantSpeed) || abs(powerStep) <= 1) {
       powerStep = computePowerDelta(motorPower, instantSpeed, realTargetSpeed);
       motorPower += powerStep;
+      updateDelay = 100;
+      // Serial.print("s");
     } else if (powerStep > 0) {
       // We're currently accelerating forwards.
       if (instantSpeed > realTargetSpeed) {
@@ -184,7 +193,7 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
       }
     }
     
-    Serial.println(motorPower);
+    // Serial.println(motorPower);
 
   }
   updateMotorPower();

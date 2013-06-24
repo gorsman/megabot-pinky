@@ -13,20 +13,26 @@ void setup() {
   Serial.println("Hello world!!!");
   
   leftController.setTargetSpeed(SPEED);
-  // rightController.setTargetSpeed(SPEED);
-  // Motor::LEFT.setPower(63);
+  rightController.setTargetSpeed(SPEED);
+  // Motor::LEFT.setPower(10);
   // Motor::RIGHT.setPower(63);
 }
 
 int cnt = 0;
 
 void loop() {
+  /*
+  static int32_t lastTicks = 0;
+  int32_t curTicks = Motor::LEFT.getTicks();
+  Serial.println(curTicks - lastTicks);
+  lastTicks = curTicks;
+  */
   long iterStartTime = micros();
   if (leftController.update()) {
     long timeTaken = micros() - iterStartTime;
     // Serial.println(timeTaken);
   }
-  // rightController.update();
+  rightController.update();
   
   if (cnt % 20 == 0) {
     Serial.print("left=");
