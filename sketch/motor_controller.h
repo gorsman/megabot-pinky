@@ -26,7 +26,9 @@ public:
   // This method should be called periodically in order to let
   // the controller do its job and update the power on the motor
   // to maintain target speed. (this should be called every 10-50 ms)
-  void update();
+  //
+  // This update takes around 300 mocroseconds of CPU time (as benchmarked on Arduino Uno).
+  bool update();
 
   Motor& motor;
 // private:

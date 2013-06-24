@@ -13,26 +13,26 @@
 #define DIRECT_BRAKE_GND 3
 
 namespace {
-#define HALL_LEFT_A 2
-#define HALL_LEFT_B 10
-#define HALL_RIGHT_A 3
-#define HALL_RIGHT_B 11
+#define HALL_RIGHT_A 2
+#define HALL_RIGHT_B 10
+#define HALL_LEFT_A 3
+#define HALL_LEFT_B 11
 
 volatile int32_t motorTicksLeft = 0;
 volatile int32_t motorTicksRight = 0;
 
 void motorInterruptLeft() {
  if (digitalRead(HALL_LEFT_A) ^ digitalRead(HALL_LEFT_B))
-   ++motorTicksLeft;
- else
    --motorTicksLeft;
+ else
+   ++motorTicksLeft;
 }
 
 void motorInterruptRight() {
  if (digitalRead(HALL_RIGHT_A) ^ digitalRead(HALL_RIGHT_B))
-   --motorTicksRight;
- else
    ++motorTicksRight;
+ else
+   --motorTicksRight;
 }
 
 void initHallSensors() {
@@ -42,11 +42,11 @@ void initHallSensors() {
   } 
   pinMode(HALL_LEFT_A, INPUT);
   pinMode(HALL_LEFT_B, INPUT);
-  attachInterrupt(0, motorInterruptLeft, CHANGE);
+  attachInterrupt(1, motorInterruptLeft, CHANGE);
  
   pinMode(HALL_RIGHT_A, INPUT);
   pinMode(HALL_RIGHT_B, INPUT);
-  attachInterrupt(1, motorInterruptRight, CHANGE);
+  attachInterrupt(0, motorInterruptRight, CHANGE);
   initialized = true;
 }
 }  // namespace
@@ -71,7 +71,8 @@ MotorHardware::MotorHardware(int8_t pinA, int8_t pinB, int8_t pinPwm, volatile i
 }
 
 int32_t MotorHardware::getTicks() {
-  return ticksCount; 
+  return ticksCount;
+  // return motorTicksRight;
 }
 
 void MotorHardware::setPower(int8_t power) {

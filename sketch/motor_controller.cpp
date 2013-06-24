@@ -8,7 +8,7 @@
 
 // Time in millis we allow the motor to catch up with the target distance.
 // This affects the real speed we want to be shooting for.
-#define CATCHUP_TIME 500
+#define CATCHUP_TIME 5000
 
 
 namespace {
@@ -61,15 +61,16 @@ bool MotorController::isMaxed() {
   return false;
 }
 
-void MotorController::update() {
+bool MotorController::update() {
   long curTime = millis();
   if (curTime - lastUpdate < MOTOR_CONTROLLER_UPDATE_PERIOD) {
     // Too early to do an update.
-    return;
+    return false;
   }
   int32_t curTicks = motor.getTicks();
   updateSpeed(curTime, curTicks);
   updateInternal(curTime, curTicks);
+  return true;
 }
 
 void MotorController::updateSpeed(long curTime, int32_t curTicks) {
@@ -116,6 +117,7 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
   int32_t ticksDelta = curTicks - lastTicks;
 
   int32_t instantSpeed = ticksDelta * 1000 / timeDelta;
+  // int32_t instantSpeed = (instantSpeed0 + lastInstantSpeed) >> 1;
 
   if (targetSpeed == 0) {
     if (motorPower != 0) {
@@ -148,8 +150,16 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
     int32_t targetTicks = checkpointTicks + targetSpeed * (curTime - lastCheckpoint) / 1000;
     int32_t controlTicksDelta = targetTicks - curTicks;
     int32_t realTargetSpeed = targetSpeed + controlTicksDelta * 1000 / CATCHUP_TIME;
+    
+    Serial.print("MC: ");
+    Serial.print(realTargetSpeed);
+    Serial.print(" ");
+    Serial.print(instantSpeed);
+    Serial.print("   power: ");
+    Serial.print(motorPower);
+    Serial.print(" -> ");
 
-    if (!accelerating(lastInstantSpeed, instantSpeed)) {
+    if (!accelerating(lastInstantSpeed, instantSpeed) || abs(powerStep) <= 1) {
       powerStep = computePowerDelta(motorPower, instantSpeed, realTargetSpeed);
       motorPower += powerStep;
     } else if (powerStep > 0) {
@@ -173,6 +183,8 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
         motorPower += powerStep;
       }
     }
+    
+    Serial.println(motorPower);
 
   }
   updateMotorPower();

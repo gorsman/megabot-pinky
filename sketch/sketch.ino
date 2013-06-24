@@ -6,7 +6,7 @@
 MotorController leftController(Motor::LEFT);
 MotorController rightController(Motor::RIGHT);
 
-#define SPEED 100
+#define SPEED 3000
 
 void setup() {
   Serial.begin(115200);
@@ -21,8 +21,12 @@ void setup() {
 int cnt = 0;
 
 void loop() {
-  leftController.update();
-  rightController.update();
+  long iterStartTime = micros();
+  if (leftController.update()) {
+    long timeTaken = micros() - iterStartTime;
+    // Serial.println(timeTaken);
+  }
+  // rightController.update();
   
   if (cnt % 20 == 0) {
     Serial.print("left=");
