@@ -22,21 +22,17 @@ volatile int32_t motorTicksLeft = 0;
 volatile int32_t motorTicksRight = 0;
 
 void motorInterruptLeft() {
- /*
  if (digitalRead(HALL_LEFT_A) ^ digitalRead(HALL_LEFT_B))
    --motorTicksLeft;
  else
    ++motorTicksLeft;
- */
 }
 
 void motorInterruptRight() {
- /*
  if (digitalRead(HALL_RIGHT_A) ^ digitalRead(HALL_RIGHT_B))
    ++motorTicksRight;
  else
    --motorTicksRight;
- */
 }
 
 void initHallSensors() {
@@ -48,11 +44,9 @@ void initHallSensors() {
   pinMode(HALL_LEFT_B, INPUT);
   attachInterrupt(1, motorInterruptLeft, CHANGE);
  
-  /*
   pinMode(HALL_RIGHT_A, INPUT);
   pinMode(HALL_RIGHT_B, INPUT);
   attachInterrupt(0, motorInterruptRight, CHANGE);
-  */
   initialized = true;
 }
 }  // namespace
@@ -78,7 +72,6 @@ MotorHardware::MotorHardware(int8_t pinA, int8_t pinB, int8_t pinPwm, volatile i
 
 int32_t MotorHardware::getTicks() {
   return ticksCount;
-  // return motorTicksRight;
 }
 
 void MotorHardware::setPower(int8_t power) {
@@ -111,12 +104,6 @@ void MotorHardware::motorGo(uint8_t direct, uint8_t pwm) {
   digitalWrite(pinA, (direct & 2) ? LOW : HIGH);
   digitalWrite(pinB, (direct & 1) ? LOW : HIGH);
   analogWrite(pinPwm, pwm);
-  /*
-  Serial.print("Motor GO direct=");
-  Serial.print(direct);
-  Serial.print(" pwm=");
-  Serial.println(pwm);
-  */
 }
 
 
