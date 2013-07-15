@@ -37,17 +37,20 @@ void log(int32_t v0, int32_t v1, int32_t v2, int32_t v3, int32_t v4) {
 
 Motor& motor = Motor::LEFT;
 MotorController motorController(motor);
+LowPassMotorSpeedMeasurer speedMeasurer(motor);
 
 long startTime = 0;
 long lastTrigger = 0;
 long triggerPeriod = 20;
-long lastUpdate = 0;
 
 void setup() {
   log_msg.data = logData;
   log_msg.data_length = LOG_DATA_LEN;
 
   pinMode(pin, OUTPUT);
+
+  // nh.getHardware()->setBaud(115200);
+  nh.getHardware()->setBaud(9600);
   nh.initNode();
   nh.subscribe(sub);
   nh.advertise(logger);
@@ -56,30 +59,35 @@ void setup() {
   startTime = lastTrigger + 5000;
 }
 
-#define SPEED 5000
+#define SPEED 1000
+
 
 void loop() {
+  long t0 = micros();
   nh.spinOnce();
+  long spinTime = micros();
   motorController.update();
+  long ctrlTime = micros();
+
+  ctrlTime -= spinTime;
+  spinTime -= t0;
 
   long curTime = millis();
-  if (lastUpdate < motorController.lastUpdate) {
-    lastUpdate = motorController.lastUpdate;
+  // int32_t curTicks = motor.getTicks();
+  // speedMeasurer.update(curTime, curTicks);
+
+  if (curTime - lastTrigger > 50) {
     lastTrigger = curTime;
-    /*
-    static int speed = 2000;
-    static int count = 0;
-    count++;
-    if (count % 100 == 0) {
-      speed = -speed;
-      motorController.setTargetSpeed(speed);
-    }
-    */
 
     long t = curTime - startTime;
+
+    static long logTime = 0;
+    long t1 = micros();
     // log(t * SPEED / 1000, motor.getTicks(), motorController.lastTicksDelta, motorController.lastInstantSpeed, motorController.motorPower);
-    log(t * SPEED / 1000, motor.getTicks(), motorController.getSpeed(), motorController.lastInstantSpeed, motorController.motorPower);
-    // logMsg(motor.getTicks());
+    // log(t * SPEED / 1000, motor.getTicks(), motorController.getSpeed(), motorController.lastInstantSpeed, motorController.motorPower);
+    log(t * SPEED / 1000, motor.getTicks(), spinTime, ctrlTime, logTime);
+    logTime = micros() - t1;
+    // log(t * SPEED / 1000, motor.getTicks(), motorController.getSpeed(), speedMeasurer.getSpeed(), motorController.lastInstantSpeed);
   }
 
   if (motorController.targetSpeed == 0 && curTime >= startTime) {

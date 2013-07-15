@@ -3,8 +3,6 @@
 
 #include <inttypes.h>
 
-#define MOTOR_EMULATOR_ENABLED
-
 class MotorEmulator {
 public:
 	MotorEmulator();

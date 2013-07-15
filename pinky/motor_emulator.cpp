@@ -1,7 +1,7 @@
 #include "motor.h"
 
 // TODO: remove this define (as it's defined in motor_emulator.h)
-#define MOTOR_EMULATOR_ENABLED
+// #define MOTOR_EMULATOR_ENABLED
 
 #ifdef MOTOR_EMULATOR_ENABLED
 
