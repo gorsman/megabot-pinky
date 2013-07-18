@@ -37,18 +37,19 @@ MotorController::MotorController(Motor& motor)
     powerStep(0),
     lastUpdate(0),
     lastTicks(0),
-    lastInstantSpeed(0) {
+    lastInstantSpeed(0),
+    maxed(false) {
 }
 
 Motor& MotorController::getMotor() {
   return motor;
 }
 
-void MotorController::setTargetSpeed(int32_t targetSpeed, bool resetOdometry) {
+void MotorController::setTargetSpeed(int32_t targetSpeed, bool preserveOdometry) {
   long curTime = millis();
   checkpointTicks = motor.getTicks();
-  if (!resetOdometry) {
-    checkpointTicks += this->targetSpeed * (curTime - lastCheckpoint) / 1000;
+  if (preserveOdometry) {
+    checkpointTicks = checkpointTicks + targetSpeed * (curTime - lastCheckpoint) / 1000;
   }
   lastCheckpoint = curTime;
 
@@ -69,7 +70,7 @@ int32_t MotorController::getSpeed() {
 }
 
 bool MotorController::isMaxed() {
-  return false;
+  return maxed;
 }
 
 bool MotorController::update() {
@@ -108,12 +109,11 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
 
   internalTargetSpeed = targetSpeed;
   int32_t instantSpeed = ticksDelta * 1000 / timeDelta;
-  // int32_t instantSpeed = (instantSpeed0 + lastInstantSpeed) >> 1;
 
   if (targetSpeed == 0) {
     if (motorPower != 0) {
       motorPower = 0;
-      updateMotorPower();
+      updateMotorPower(0);
     }
 
     lastUpdate = curTime;
@@ -147,7 +147,6 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
       powerStep = computePowerDelta(motorPower, instantSpeed, internalTargetSpeed);
       motorPower += powerStep;
       updateDelay = 100;
-      // Serial.print("s");
     } else if (powerStep > 0) {
       // We're currently accelerating forwards.
       if (instantSpeed > internalTargetSpeed) {
@@ -169,32 +168,32 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
         motorPower += powerStep;
       }
     }
-    
-    // Serial.println(motorPower);
-
   }
-  updateMotorPower();
+  updateMotorPower(instantSpeed - lastInstantSpeed);
 
   lastUpdate = curTime;
   lastTicks = curTicks;
   lastInstantSpeed = instantSpeed;
 }
 
-void MotorController::updateMotorPower() {
+void MotorController::updateMotorPower(int32_t instantSpeedDelta) {
   if (targetSpeed >= 0) {
-    if (motorPower > MOTOR_MAX_POWER) {
-      motorPower = MOTOR_MAX_POWER;
-      // TODO: handle motor being maxed out
-    } else if (motorPower < 0) {
-      motorPower = 0;
+    if (motorPower < 0) {
+        motorPower = 0;
     }
   } else {
-    if (motorPower < -MOTOR_MAX_POWER) {
-      motorPower = -MOTOR_MAX_POWER;
-      // TODO: handle motor being maxed out
-    } else if (motorPower > 0) {
+    if (motorPower > 0) {
       motorPower = 0;
     }
+  }
+  if (motorPower >= MOTOR_MAX_POWER) {
+    motorPower = MOTOR_MAX_POWER;
+    maxed |= instantSpeedDelta <= 0;
+  } else if (motorPower <= -MOTOR_MAX_POWER) {
+    motorPower = -MOTOR_MAX_POWER;
+    maxed |= instantSpeedDelta <= 0;
+  } else {
+    maxed = false;
   }
   if (motorPower != motor.getPower()) {
     motor.setPower(motorPower);

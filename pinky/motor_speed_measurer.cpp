@@ -13,9 +13,9 @@ bool LowPassMotorSpeedMeasurer::update(long curTime) {
     return false;
   }
   int32_t curTicks = motor.getTicks();
-  instantSpeed = (lastTicks - curTicks) * 1000 / timeDelta;
+  instantSpeed = (curTicks - lastTicks) * 1000 / timeDelta;
   speed = (speed + instantSpeed) >> 1;
-
+  if (speed == -1) speed = 0;  // forcing the speed to reach 0
   lastUpdate = curTime;
   lastTicks = curTicks;
   return true;

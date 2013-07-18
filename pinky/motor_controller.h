@@ -15,7 +15,7 @@ public:
   Motor& getMotor();
 
   // Set target speed in ticks/sec.
-  void setTargetSpeed(int32_t targetSpeed, bool resetOdometry);
+  void setTargetSpeed(int32_t targetSpeed, bool preserveOdometry);
   // Returns the current target speed.
   int32_t getTargetSpeed();
   int32_t getInternalTargetSpeed();
@@ -52,8 +52,10 @@ private:
   int32_t lastTicks;
   int32_t lastInstantSpeed;
 
+  bool maxed;
+
   void updateInternal(long curTime, int32_t curTicks);
-  void updateMotorPower();
+  void updateMotorPower(int32_t instantSpeedDelta);
 };
 
 

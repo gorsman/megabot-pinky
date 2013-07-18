@@ -13,7 +13,7 @@ namespace megabot
   {
     public:
       int32_t TargetSpeed;
-      bool ResetOdometry;
+      bool PreserveOdometry;
 
     virtual int serialize(unsigned char *outbuffer) const
     {
@@ -31,10 +31,10 @@ namespace megabot
       union {
         bool real;
         uint8_t base;
-      } u_ResetOdometry;
-      u_ResetOdometry.real = this->ResetOdometry;
-      *(outbuffer + offset + 0) = (u_ResetOdometry.base >> (8 * 0)) & 0xFF;
-      offset += sizeof(this->ResetOdometry);
+      } u_PreserveOdometry;
+      u_PreserveOdometry.real = this->PreserveOdometry;
+      *(outbuffer + offset + 0) = (u_PreserveOdometry.base >> (8 * 0)) & 0xFF;
+      offset += sizeof(this->PreserveOdometry);
       return offset;
     }
 
@@ -55,16 +55,16 @@ namespace megabot
       union {
         bool real;
         uint8_t base;
-      } u_ResetOdometry;
-      u_ResetOdometry.base = 0;
-      u_ResetOdometry.base |= ((uint8_t) (*(inbuffer + offset + 0))) << (8 * 0);
-      this->ResetOdometry = u_ResetOdometry.real;
-      offset += sizeof(this->ResetOdometry);
+      } u_PreserveOdometry;
+      u_PreserveOdometry.base = 0;
+      u_PreserveOdometry.base |= ((uint8_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      this->PreserveOdometry = u_PreserveOdometry.real;
+      offset += sizeof(this->PreserveOdometry);
      return offset;
     }
 
     const char * getType(){ return "megabot/MotorCommand"; };
-    const char * getMD5(){ return "8300b7edfc7daafac198af6900b197fc"; };
+    const char * getMD5(){ return "f5da1b62772b6e31e620e30b5640ceb4"; };
 
   };
 

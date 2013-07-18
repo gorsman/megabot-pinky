@@ -58,7 +58,7 @@ namespace megabot
     }
 
     const char * getType(){ return "megabot/DriveCommand"; };
-    const char * getMD5(){ return "88a5447b25fba0cba88a0352565ac65c"; };
+    const char * getMD5(){ return "803f660ab79852767fdeadd7657af716"; };
 
   };
 

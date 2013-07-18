@@ -1,8 +1,5 @@
 #include "motor.h"
 
-// TODO: remove this define (as it's defined in motor_emulator.h)
-#define MOTOR_HARDWARE_ENABLED
-
 #ifdef MOTOR_HARDWARE_ENABLED
 
 #include "Arduino.h"

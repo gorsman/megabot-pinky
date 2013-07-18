@@ -1,17 +1,8 @@
 #include "motor.h"
 
-// TODO: remove this define (as it's defined in motor_emulator.h)
-// #define MOTOR_EMULATOR_ENABLED
-
 #ifdef MOTOR_EMULATOR_ENABLED
 
 #include "Arduino.h"
-
-// TODOs:
-//   + stale power (minimum power required to move the motor)
-//   + acceleration
-//   - weight (affects max-speed and actual stale power)
-//   - ticks measurement spread
 
 // Motor parameters.
 #define STALE_POWER 20
@@ -21,6 +12,7 @@
 #define TICKS_CACHE_TIME_MILLIS 3
 
 namespace {
+#define MOTOR_TICKS_PER_ROUND int32_t(3000)
 static const int32_t MAX_SPEED =
     MAX_SPEED_ROUNDS_PER_MINUTE * MOTOR_TICKS_PER_ROUND / 60;  // ticks/sec ~ 6000
 static const int32_t ACCELRATION =

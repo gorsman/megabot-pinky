@@ -24,19 +24,17 @@ void Driver::executeCommand(const megabot::DriveCommand& command) {
 
 void Driver::getTelemetry(megabot::DriveTelemetry* telemetry) {
   getMotorTelemetry(left, &telemetry->Telemetry[0]);
-  getMotorTelemetry(right, &telemetry->Telemetry[0]);
+  getMotorTelemetry(right, &telemetry->Telemetry[1]);
 }
 
 void Driver::executeMotorCommand(MotorController& motorController, const megabot::MotorCommand& command) {
-  motorController.setTargetSpeed(command.TargetSpeed, command.ResetOdometry);
+  motorController.setTargetSpeed(command.TargetSpeed, command.PreserveOdometry);
 }
-
 
 void Driver::getMotorTelemetry(MotorController& motorController, megabot::MotorTelemetry* telemetry) {
   telemetry->Distance = motorController.getMotor().getTicks();
   telemetry->CurrentSpeed = motorController.getSpeed();
   telemetry->TargetSpeed = motorController.getTargetSpeed();
   telemetry->InternalTargetSpeed = motorController.getInternalTargetSpeed();
-  // TODO: initialize Maxed properly
-  telemetry->Maxed = false;
+  telemetry->Maxed = motorController.isMaxed();
 }
