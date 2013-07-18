@@ -30,11 +30,13 @@ generate_arduino_library(motor_lib
          motor_hardware.cpp
          motor_speed_measurer.cpp
          motor_controller.cpp
+         driver.cpp
     HDRS motor.h
          motor_emulator.h
          motor_hardware.h
          motor_speed_measurer.h
-         motor_controller.h)
+         motor_controller.h
+         driver.h)
     
 generate_arduino_firmware(pinky
     SRCS pinky_main.cpp

@@ -12,8 +12,13 @@ class MotorController {
 public:
   MotorController(Motor& motor);
 
+  Motor& getMotor();
+
   // Set target speed in ticks/sec.
-  void setTargetSpeed(int32_t targetSpeed);
+  void setTargetSpeed(int32_t targetSpeed, bool resetOdometry);
+  // Returns the current target speed.
+  int32_t getTargetSpeed();
+  int32_t getInternalTargetSpeed();
 
   // Returns the actual current speed of the motor.
   int32_t getSpeed();
@@ -30,10 +35,12 @@ public:
   bool update();
 
   Motor& motor;
-// private:
-  SlidingWindowMotorSpeedMeasurer speedMeasurer;
+private:
+  LowPassMotorSpeedMeasurer speedMeasurer;
 
   int32_t targetSpeed;
+  int32_t internalTargetSpeed;
+
   int16_t motorPower;
   long updateDelay;
 

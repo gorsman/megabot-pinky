@@ -28,3 +28,15 @@ for CMake to locate this software).
      PATH=$PATH:$ECLIPSE_DIR
      export PATH
    Mark the file as executable: sudo chmod a+rx /etc/profile.d/eclipse.sh
+
+3. Building with CMake
+   We depend on arduino-cmake project.
+   See https://github.com/queezythegreat/arduino-cmake
+   
+   All the building should happen in the build/ subdirectory. Run use the following commands:
+     cd build/
+     rm -rf *
+     cmake ../pinky/
+     make pinky
+     make pinky-upload
+    

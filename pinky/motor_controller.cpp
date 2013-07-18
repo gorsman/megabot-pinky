@@ -29,6 +29,7 @@ MotorController::MotorController(Motor& motor)
   : motor(motor),
     speedMeasurer(motor),
     targetSpeed(0),
+    internalTargetSpeed(0),
     motorPower(0),
     updateDelay(MOTOR_CONTROLLER_UPDATE_PERIOD),
     lastCheckpoint(0),
@@ -39,13 +40,28 @@ MotorController::MotorController(Motor& motor)
     lastInstantSpeed(0) {
 }
 
-void MotorController::setTargetSpeed(int32_t targetSpeed) {
-  this->targetSpeed = targetSpeed;
+Motor& MotorController::getMotor() {
+  return motor;
+}
 
+void MotorController::setTargetSpeed(int32_t targetSpeed, bool resetOdometry) {
   long curTime = millis();
-  lastCheckpoint = curTime;
   checkpointTicks = motor.getTicks();
+  if (!resetOdometry) {
+    checkpointTicks += this->targetSpeed * (curTime - lastCheckpoint) / 1000;
+  }
+  lastCheckpoint = curTime;
+
+  this->targetSpeed = targetSpeed;
   updateInternal(curTime, checkpointTicks);
+}
+
+int32_t MotorController::getTargetSpeed() {
+  return targetSpeed;
+}
+
+int32_t MotorController::getInternalTargetSpeed() {
+  return internalTargetSpeed;
 }
 
 int32_t MotorController::getSpeed() {
@@ -59,7 +75,7 @@ bool MotorController::isMaxed() {
 bool MotorController::update() {
   long curTime = millis();
 
-  // speedMeasurer.update(curTime);
+  speedMeasurer.update(curTime);
   if (curTime - lastUpdate < updateDelay) {
     // Too early to do an update.
     return false;
@@ -90,6 +106,7 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
   long timeDelta = curTime - lastUpdate;
   int32_t ticksDelta = curTicks - lastTicks;
 
+  internalTargetSpeed = targetSpeed;
   int32_t instantSpeed = ticksDelta * 1000 / timeDelta;
   // int32_t instantSpeed = (instantSpeed0 + lastInstantSpeed) >> 1;
 
@@ -123,27 +140,17 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
   } else {
     int32_t targetTicks = checkpointTicks + targetSpeed * (curTime - lastCheckpoint) / 1000;
     int32_t controlTicksDelta = targetTicks - curTicks;
-    int32_t realTargetSpeed = targetSpeed + controlTicksDelta * 1000 / CATCHUP_TIME;
+    internalTargetSpeed = targetSpeed + controlTicksDelta * 1000 / CATCHUP_TIME;
     
-    /*
-    Serial.print("MC: ");
-    Serial.print(realTargetSpeed);
-    Serial.print(" ");
-    Serial.print(instantSpeed);
-    Serial.print("   power: ");
-    Serial.print(motorPower);
-    Serial.print(" -> ");
-    */
-
     updateDelay = MOTOR_CONTROLLER_UPDATE_PERIOD;
     if (isStableSpeed(lastInstantSpeed, instantSpeed) || abs(powerStep) <= 1) {
-      powerStep = computePowerDelta(motorPower, instantSpeed, realTargetSpeed);
+      powerStep = computePowerDelta(motorPower, instantSpeed, internalTargetSpeed);
       motorPower += powerStep;
       updateDelay = 100;
       // Serial.print("s");
     } else if (powerStep > 0) {
       // We're currently accelerating forwards.
-      if (instantSpeed > realTargetSpeed) {
+      if (instantSpeed > internalTargetSpeed) {
         // We overshoot and still accelerating - using binary-search-like approach to adjust the power.
         powerStep = - (powerStep >> 1);
         if (powerStep == 0) {
@@ -153,7 +160,7 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
       }
     } else {
       // We're currently accelerating backwards.
-      if (instantSpeed < realTargetSpeed) {
+      if (instantSpeed < internalTargetSpeed) {
         // We overshoot and still accelerating - using binary-search-like approach to adjust the power.
         powerStep = (-powerStep) >> 1;
         if (powerStep == 0) {
