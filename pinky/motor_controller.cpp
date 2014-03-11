@@ -19,7 +19,7 @@ const int32_t MAX_POWER_STEP = Motor::MAX_POWER >> 1;
 const int32_t ACCELERATION_SPEED_DELTA_THRESHOLD = 5 * SPEED_PER_TICK;
 
 inline bool isStableSpeed(int32_t lastSpeed, int32_t currentSpeed) {
-  return abs(lastSpeed - currentSpeed) <= ACCELERATION_SPEED_DELTA_THRESHOLD;
+  return lastSpeed != 0 && abs(lastSpeed - currentSpeed) <= ACCELERATION_SPEED_DELTA_THRESHOLD;
 }
 
 }  // namespace
@@ -154,7 +154,14 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
     motorPower += powerStep;
   } else {
     updateDelay = MOTOR_CONTROLLER_UPDATE_PERIOD;
-    if (isStableSpeed(prev->instantSpeed, cur->instantSpeed) || abs(powerStep) <= 1) {
+    if (cur->instantSpeed == 0) {
+      if (checkpoint.targetSpeed > 0) {
+        powerStep = cur->targetSpeed > checkpoint.targetSpeed ? 1 : 0;
+      } else {
+        powerStep = cur->targetSpeed < checkpoint.targetSpeed ? -1 : 0;
+      }
+      motorPower += powerStep;
+    } else if (isStableSpeed(prev->instantSpeed, cur->instantSpeed) || abs(powerStep) <= 1) {
       powerStep = computePowerDelta(motorPower, cur->instantSpeed, cur->targetSpeed);
       motorPower += powerStep;
       updateDelay = MOTOR_CONTROLLER_UPDATE_PERIOD << 1;
