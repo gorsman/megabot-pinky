@@ -64,8 +64,6 @@ void MotorController::setTargetSpeed(int32_t targetSpeed, bool preserveOdometry)
 
   // Resetting update delay to its default value.
   updateDelay = MOTOR_CONTROLLER_UPDATE_PERIOD;
-
-  updateInternal(curTime, curTicks);
 }
 
 int32_t MotorController::getTargetSpeed() {
@@ -118,11 +116,10 @@ inline int16_t computePowerDelta(int16_t curPower, int32_t curSpeed, int32_t tar
 }  // namespace
 
 void MotorController::updateInternal(long curTime, int32_t curTicks) {
-  if (curTime - cur->time >= updateDelay) {
-    curStateIndex = (curStateIndex ^ 1);
-    prev = cur;
-    cur = &states[curStateIndex];
-  }
+  curStateIndex = (curStateIndex ^ 1);
+  prev = cur;
+  cur = &states[curStateIndex];
+
   cur->time = curTime;
   cur->ticks = curTicks;
   cur->instantSpeed = (cur->ticks - prev->ticks) * 1000 / (cur->time - prev->time);
@@ -160,7 +157,7 @@ void MotorController::updateInternal(long curTime, int32_t curTicks) {
     if (isStableSpeed(prev->instantSpeed, cur->instantSpeed) || abs(powerStep) <= 1) {
       powerStep = computePowerDelta(motorPower, cur->instantSpeed, cur->targetSpeed);
       motorPower += powerStep;
-      updateDelay <<= 1;
+      updateDelay = MOTOR_CONTROLLER_UPDATE_PERIOD << 1;
     } else if (powerStep > 0) {
       // We're currently accelerating forwards.
       if (cur->instantSpeed > cur->targetSpeed) {

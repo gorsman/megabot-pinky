@@ -41,8 +41,8 @@ void loop() {
   driver.update();
   long curTime = millis();
   if (curTime > lastTrigger + TELEMETRY_PUBLISH_PERIOD_MS) {
+    lastTrigger = curTime;
     driver.getTelemetry(&telemetryMsg);
     driveTelemetryPublisher.publish(&telemetryMsg);
-    lastTrigger = curTime;
   }
 }
