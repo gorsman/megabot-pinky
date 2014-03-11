@@ -22,7 +22,7 @@ public:
 
   // Returns the actual current speed of the motor.
   int32_t getSpeed();
-  int32_t getInstantSpeed() {return cur->instantSpeed;}
+  int32_t getInstantSpeed();
 
   // Returns true in case the motor is at maximum speed already
   // and can't reach the target speed.
@@ -42,6 +42,7 @@ private:
   struct Checkpoint {
     Checkpoint();
     long time;
+    int8_t direction;
     int32_t targetSpeed;
     int32_t targetTicks;
   };
@@ -57,6 +58,7 @@ private:
   struct State {
     State();
     long time;
+    int8_t direction;
     int32_t ticks;
     int32_t instantSpeed;
     int32_t targetSpeed;
