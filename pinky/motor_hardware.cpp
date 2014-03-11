@@ -74,6 +74,9 @@ int32_t MotorHardware::getTicks() {
 }
 
 void MotorHardware::setPower(int16_t power) {
+  if (this->power == power) {
+    return;
+  }
   if (power == 0) {
     digitalWrite(pinA, LOW);
     digitalWrite(pinB, LOW);
