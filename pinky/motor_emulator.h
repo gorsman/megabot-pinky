@@ -9,15 +9,17 @@ public:
 
 	int32_t getTicks();
 
-	void setPower(int8_t power);
-	int8_t getPower();
+	void setPower(int16_t power);
+	int16_t getPower();
 
 	static MotorEmulator LEFT;
 	static MotorEmulator RIGHT;
 
+	static const int16_t MAX_POWER;
+
 private:
 	// Power set from outside.
-  int8_t power;
+  int16_t power;
   // Speed derived from the #power.
   int32_t targetSpeed;  // ticks/sec
 

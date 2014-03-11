@@ -27,7 +27,7 @@ ros::Publisher driveTelemetryPublisher("telemetry", &telemetryMsg );
 long lastTrigger = 0;
 
 void setup() {
-  nh.getHardware()->setBaud(115200);  // 9600
+  nh.getHardware()->setBaud(57600);  // 115200 9600
   nh.initNode();
 
   nh.subscribe(driveCommandSubscriber);

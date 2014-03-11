@@ -48,6 +48,8 @@ void initHallSensors() {
 }
 }  // namespace
 
+const int16_t MotorHardware::MAX_POWER = 255;
+
 MotorHardware MotorHardware::LEFT(7, 8, 5, motorTicksLeft);
 MotorHardware MotorHardware::RIGHT(4, 9, 6, motorTicksRight);
 
@@ -71,15 +73,16 @@ int32_t MotorHardware::getTicks() {
   return ticksCount;
 }
 
-void MotorHardware::setPower(int8_t power) {
+void MotorHardware::setPower(int16_t power) {
   if (power == 0) {
     digitalWrite(pinA, LOW);
     digitalWrite(pinB, LOW);
     analogWrite(pinPwm, 0);
   } else {
-    if (power < -MOTOR_MAX_POWER) {
-      // This prevents integer overflow when we take abs(power).
-      power = -MOTOR_MAX_POWER;
+    if (power < -MAX_POWER) {
+      power = -MAX_POWER;
+    } else if (power > MAX_POWER) {
+      power = MAX_POWER;
     }
     uint8_t pwm = abs(power);
     pwm = pwm << 1;
@@ -93,7 +96,7 @@ void MotorHardware::setPower(int8_t power) {
   this->power = power; 
 }
 
-int8_t MotorHardware::getPower() {
+int16_t MotorHardware::getPower() {
   return power;
 }
 

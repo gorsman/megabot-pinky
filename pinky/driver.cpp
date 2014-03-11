@@ -9,8 +9,8 @@ Driver::Driver(Motor& l, Motor& r)
 void Driver::update() {
   long curTime = millis();
   if (curTime > dieTime) {
-    left.setTargetSpeed(0, true);
-    right.setTargetSpeed(0, true);
+    left.setTargetSpeed(0, false);
+    right.setTargetSpeed(0, false);
   }
   left.update();
   right.update();
@@ -32,9 +32,12 @@ void Driver::executeMotorCommand(MotorController& motorController, const megabot
 }
 
 void Driver::getMotorTelemetry(MotorController& motorController, megabot::MotorTelemetry* telemetry) {
-  telemetry->Distance = motorController.getMotor().getTicks();
+  Motor& motor = motorController.getMotor();
+  telemetry->Distance = motor.getTicks();
   telemetry->CurrentSpeed = motorController.getSpeed();
+  telemetry->InstantSpeed = motorController.getInstantSpeed();
   telemetry->TargetSpeed = motorController.getTargetSpeed();
   telemetry->InternalTargetSpeed = motorController.getInternalTargetSpeed();
   telemetry->Maxed = motorController.isMaxed();
+  telemetry->MotorPower = motor.getPower();
 }

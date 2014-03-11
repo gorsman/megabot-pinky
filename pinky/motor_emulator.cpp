@@ -19,6 +19,8 @@ static const int32_t ACCELRATION =
     MAX_SPEED * 1000 / MAX_SPEED_ACCELERATION_TIME_MILLIS;  // ticks/sec^2 ~ 15000
 }  // namespace
 
+const int16_t MotorEmulator::MAX_POWER = 255;
+
 MotorEmulator MotorEmulator::LEFT;
 MotorEmulator MotorEmulator::RIGHT;
 
@@ -57,7 +59,7 @@ int32_t MotorEmulator::getTicks() {
 	return cachedTicks;
 }
 
-void MotorEmulator::setPower(int8_t power) {
+void MotorEmulator::setPower(int16_t power) {
   if (power == this->power) {
     // No need to do anything - power is already set.
     return;
@@ -80,15 +82,15 @@ void MotorEmulator::setPower(int8_t power) {
   }
 }
 
-int8_t MotorEmulator::getPower() {
+int16_t MotorEmulator::getPower() {
   return power;
 }
 
-int32_t MotorEmulator::speedFromPower(int8_t power) {
+int32_t MotorEmulator::speedFromPower(int16_t power) {
   if (abs(power) < STALE_POWER) {
     return 0;
   }
-  return power * MAX_SPEED / MOTOR_MAX_POWER;
+  return power * MAX_SPEED / MAX_POWER;
 }
 
 int32_t MotorEmulator::getCurrentSpeed(long curTime) {

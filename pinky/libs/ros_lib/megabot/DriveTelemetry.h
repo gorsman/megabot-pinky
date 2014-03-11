@@ -36,7 +36,7 @@ namespace megabot
     }
 
     const char * getType(){ return "megabot/DriveTelemetry"; };
-    const char * getMD5(){ return "e34ba3db901d50117a3cf38ec27cf5ed"; };
+    const char * getMD5(){ return "0a8c2687ccd5fd1005a44cc24b83477e"; };
 
   };
 

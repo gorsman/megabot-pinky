@@ -1,8 +1,6 @@
 #ifndef MOTOR_H_
 #define MOTOR_H_
 
-#define MOTOR_MAX_POWER 127
-
 #define MOTOR_HARDWARE_ENABLED
 #include "motor_hardware.h"
 typedef MotorHardware Motor;

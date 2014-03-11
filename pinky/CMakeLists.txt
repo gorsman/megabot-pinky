@@ -21,10 +21,6 @@ set(ARDUINO_DEFAULT_PORT /dev/ttyACM0)
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
 set(ros_lib_RECURSE True)
 
-generate_arduino_library(example_lib
-    SRCS example/example.cpp
-    HDRS example/example.h)
-
 generate_arduino_library(motor_lib
     SRCS motor_emulator.cpp
          motor_hardware.cpp
@@ -40,4 +36,4 @@ generate_arduino_library(motor_lib
     
 generate_arduino_firmware(pinky
     SRCS pinky_main.cpp
-    LIBS example_lib motor_lib)
+    LIBS motor_lib)

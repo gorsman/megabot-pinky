@@ -22,6 +22,7 @@ public:
 
   // Returns the actual current speed of the motor.
   int32_t getSpeed();
+  int32_t getInstantSpeed() {return cur->instantSpeed;}
 
   // Returns true in case the motor is at maximum speed already
   // and can't reach the target speed.
@@ -38,24 +39,39 @@ public:
 private:
   LowPassMotorSpeedMeasurer speedMeasurer;
 
-  int32_t targetSpeed;
-  int32_t internalTargetSpeed;
+  struct Checkpoint {
+    Checkpoint();
+    long time;
+    int32_t targetSpeed;
+    int32_t targetTicks;
+  };
+
+  Checkpoint checkpoint;
 
   int16_t motorPower;
+  int16_t powerStep;
+
+  int maxed;
   long updateDelay;
 
-  long lastCheckpoint;
-  int32_t checkpointTicks;
+  struct State {
+    State();
+    long time;
+    int32_t ticks;
+    int32_t instantSpeed;
+    int32_t targetSpeed;
+  };
 
-  int16_t powerStep;
-  long lastUpdate;
-  int32_t lastTicks;
-  int32_t lastInstantSpeed;
+  State states[2];
+  int curStateIndex;
+  State* prev;
+  State* cur;
 
-  bool maxed;
+
+  int32_t getTargetTicksSinceCheckpoint(long curTime);
 
   void updateInternal(long curTime, int32_t curTicks);
-  void updateMotorPower(int32_t instantSpeedDelta);
+  void updateMotorPower();
 };
 
 

@@ -11,15 +11,17 @@ public:
 
   int32_t getTicks();
 
-  void setPower(int8_t power);
-  int8_t getPower();
+  void setPower(int16_t power);
+  int16_t getPower();
 
   static MotorHardware LEFT;
   static MotorHardware RIGHT;
 
+  static const int16_t MAX_POWER;
+
 private:
   // Power set from outside.
-  int8_t power;
+  int16_t power;
   
   int8_t pinA;
   int8_t pinB;

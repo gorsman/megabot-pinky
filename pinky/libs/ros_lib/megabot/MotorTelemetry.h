@@ -14,9 +14,11 @@ namespace megabot
     public:
       int32_t Distance;
       int32_t CurrentSpeed;
+      int32_t InstantSpeed;
       int32_t TargetSpeed;
       int32_t InternalTargetSpeed;
       bool Maxed;
+      int16_t MotorPower;
 
     virtual int serialize(unsigned char *outbuffer) const
     {
@@ -44,6 +46,16 @@ namespace megabot
       union {
         int32_t real;
         uint32_t base;
+      } u_InstantSpeed;
+      u_InstantSpeed.real = this->InstantSpeed;
+      *(outbuffer + offset + 0) = (u_InstantSpeed.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_InstantSpeed.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_InstantSpeed.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_InstantSpeed.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->InstantSpeed);
+      union {
+        int32_t real;
+        uint32_t base;
       } u_TargetSpeed;
       u_TargetSpeed.real = this->TargetSpeed;
       *(outbuffer + offset + 0) = (u_TargetSpeed.base >> (8 * 0)) & 0xFF;
@@ -68,6 +80,14 @@ namespace megabot
       u_Maxed.real = this->Maxed;
       *(outbuffer + offset + 0) = (u_Maxed.base >> (8 * 0)) & 0xFF;
       offset += sizeof(this->Maxed);
+      union {
+        int16_t real;
+        uint16_t base;
+      } u_MotorPower;
+      u_MotorPower.real = this->MotorPower;
+      *(outbuffer + offset + 0) = (u_MotorPower.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_MotorPower.base >> (8 * 1)) & 0xFF;
+      offset += sizeof(this->MotorPower);
       return offset;
     }
 
@@ -99,6 +119,17 @@ namespace megabot
       union {
         int32_t real;
         uint32_t base;
+      } u_InstantSpeed;
+      u_InstantSpeed.base = 0;
+      u_InstantSpeed.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_InstantSpeed.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_InstantSpeed.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_InstantSpeed.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->InstantSpeed = u_InstantSpeed.real;
+      offset += sizeof(this->InstantSpeed);
+      union {
+        int32_t real;
+        uint32_t base;
       } u_TargetSpeed;
       u_TargetSpeed.base = 0;
       u_TargetSpeed.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
@@ -126,11 +157,20 @@ namespace megabot
       u_Maxed.base |= ((uint8_t) (*(inbuffer + offset + 0))) << (8 * 0);
       this->Maxed = u_Maxed.real;
       offset += sizeof(this->Maxed);
+      union {
+        int16_t real;
+        uint16_t base;
+      } u_MotorPower;
+      u_MotorPower.base = 0;
+      u_MotorPower.base |= ((uint16_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_MotorPower.base |= ((uint16_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      this->MotorPower = u_MotorPower.real;
+      offset += sizeof(this->MotorPower);
      return offset;
     }
 
     const char * getType(){ return "megabot/MotorTelemetry"; };
-    const char * getMD5(){ return "8efe6d2bcde27427260e75ed578769dc"; };
+    const char * getMD5(){ return "26e8128e91c9644c00327c1fcfc638c3"; };
 
   };
 
